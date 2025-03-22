@@ -10,6 +10,8 @@ from webdriver_manager.chrome import ChromeDriverManager as CM
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
 
+from selenium.webdriver.chrome.options import Options
+
 def save_credentials(username, password):
     with open('credentials.txt', 'w') as file:
         file.write(f"{username}\n{password}")
@@ -46,24 +48,24 @@ def login(bot, username, password):
         print("[Info] - Instagram did not require to accept cookies this time.")
 
     print("[Info] - Logging in...")
-    username_input = WebDriverWait(bot, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[name='username']")))
-    password_input = WebDriverWait(bot, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[name='password']")))
+    username_input = WebDriverWait(bot, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[name='username']")))
+    password_input = WebDriverWait(bot, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[name='password']")))
 
     username_input.clear()
     username_input.send_keys(username)
     password_input.clear()
     password_input.send_keys(password)
 
-    login_button = WebDriverWait(bot, 2).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[type='submit']")))
+    login_button = WebDriverWait(bot, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[type='submit']")))
     login_button.click()
     time.sleep(10)
 
 
 def scrape_followers(bot, username, user_input):
     bot.get(f'https://www.instagram.com/{username}/')
-    time.sleep(3.5)
+    time.sleep(35)
     WebDriverWait(bot, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/followers')]"))).click()
-    time.sleep(2)
+    time.sleep(20)
     print(f"[Info] - Scraping followers for {username}...")
 
     users = set()
@@ -95,26 +97,29 @@ def scrape():
     else:
         username, password = credentials
 
-    user_input = int(input('[Required] - How many followers do you want to scrape (100-2000 recommended): '))
-
-    usernames = input("Enter the Instagram usernames you want to scrape (separated by commas): ").split(",")
-
+   # user_input = int(input('[Required] - How many followers do you want to scrape (100-2000 recommended): '))
+    user_input = 20
+   # usernames = input("Enter the Instagram usernames you want to scrape (separated by commas): ").split(",")
+    usernames = "kevintaoooo"
     service = Service()
     options = webdriver.ChromeOptions()
+    
+
     # options.add_argument("--headless")
     options.add_argument('--no-sandbox')
     options.add_argument("--log-level=3")
     mobile_emulation = {
-        "userAgent": "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/90.0.1025.166 Mobile Safari/535.19"}
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"}
     options.add_experimental_option("mobileEmulation", mobile_emulation)
 
 
     bot = webdriver.Chrome(service=service, options=options)
-    bot.set_page_load_timeout(15) # Set the page load timeout to 15 seconds
+    bot.set_page_load_timeout(30) # Set the page load timeout to 15 seconds
 
     login(bot, username, password)
-
+    print(f"login finish")
     for user in usernames:
+        print(f"Scape {user}")
         user = user.strip()
         scrape_followers(bot, user, user_input)
 
