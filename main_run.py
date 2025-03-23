@@ -7,7 +7,7 @@ except ImportError as e:
     instaloader_module = None
 
 try:
-    import run_kevin as run_kevin_module
+    import run_scroll as run_kevin_module
 except ImportError as e:
     print("Error importing run_kevin:", e)
     run_kevin_module = None

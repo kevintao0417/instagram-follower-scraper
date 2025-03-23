@@ -61,13 +61,13 @@ def login(bot, username, password):
     password_input.clear()
     password_input.send_keys(password)
 
-    login_button = WebDriverWait(bot, 10).until(
+    login_button = WebDriverWait(bot, 5).until(
         EC.element_to_be_clickable((By.CSS_SELECTOR, "button[type='submit']"))
     )
     login_button.click()
 
     # Wait for login to complete (watch a specific element from homepage or post-login)
-    time.sleep(8)  # adjust as needed
+    time.sleep(5)  # adjust as needed
 
 def scrape_followers(bot, username, num_followers_to_scrape):
     """Scrapes 'num_followers_to_scrape' followers for the given username."""
@@ -92,13 +92,13 @@ def scrape_followers(bot, username, num_followers_to_scrape):
 
 
     followers_link.click()
-    time.sleep(10)
+    time.sleep(5)
 
     # Wait for the modal to appear
-    modal = WebDriverWait(bot, 40).until(
+    modal = WebDriverWait(bot, 20).until(
         EC.presence_of_element_located((By.XPATH, "//div[@role='dialog']"))
     )
-    time.sleep(20)
+    time.sleep(10)
     print(f"[Info] - Followers modal found; scraping followers for {username}...")
 
     try:
@@ -117,15 +117,15 @@ def scrape_followers(bot, username, num_followers_to_scrape):
     except NoSuchElementException:
         print(f"[Debug] - Can't locate the element")
     # Scroll the modal to load more followers
-    SCROLL_TIMES = follower_count // 15 + 5
+    SCROLL_TIMES = follower_count // 10 + 5
     bot.set_script_timeout(60)
     scroll_pos = 0
-    scroll_increment = 800
+    scroll_increment = 1000
     for i in range(SCROLL_TIMES):
         print(f"[Info] - Total Scrolls: {SCROLL_TIMES}, Scroll {i}")
         scroll_pos += scroll_increment
         bot.execute_script("arguments[0].scrollTop = arguments[1];", scrollable_div, scroll_pos)
-        time.sleep(5)
+        time.sleep(2)
 
     # Collect followers data
     followers_info = []
@@ -201,11 +201,19 @@ def scrape():
 
     # Hard-coded for example
     user_input = 20
-    usernames = ["lucy_wjzh", "candice_wyj_"]
-
+    usernames = get_usernames()
+    chrome_binary = (
+        "/Users/kevintao/Develop/ChromeTest/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
+    )
+    
+    # Path to your ChromeDriver executable (make sure this file exists and is executable)
+    chromedriver_path = (
+        "/Users/kevintao/Develop/ChromeTest/chromedriver-mac-arm64/chromedriver"
+    )
     # Set up Chrome
-    service = Service(CM().install())
     options = Options()
+    # Use your custom Chrome binary
+    options.binary_location = chrome_binary
     # Uncomment to run in headless mode
     # options.add_argument("--headless")
 
@@ -217,6 +225,8 @@ def scrape():
     options.add_experimental_option("mobileEmulation", mobile_emulation)
     options.add_argument('--no-sandbox')
     options.add_argument("--log-level=3")
+
+    service = Service(executable_path=chromedriver_path)
 
     bot = webdriver.Chrome(service=service, options=options)
     bot.set_page_load_timeout(90)
@@ -230,6 +240,37 @@ def scrape():
             scrape_followers(bot, user, user_input)
     finally:
         bot.quit()
+
+
+def get_usernames():
+    choice = input(
+        "Select input method:\n"
+        "1. Read from CSV file (usernamelist.csv)\n"
+        "2. Input manually\n"
+        "Enter 1 or 2: "
+    ).strip()
+
+    if choice == "1":
+        try:
+            with open("usernamelist.csv", "r", encoding="utf-8") as file:
+                reader = csv.reader(file)
+                # Uncomment the following line if your CSV has a header row
+                # next(reader, None)
+                usernames = [row[0].strip() for row in reader if row]
+            print(f"Usernames loaded from CSV: {usernames}")
+            return usernames
+        except FileNotFoundError:
+            print("CSV file 'usernamelist.csv' not found. Please check the file location.")
+            return []
+    elif choice == "2":
+        usernames = input("Enter the Instagram usernames you want to scrape (separated by commas): ").split(",")
+        usernames = [username.strip() for username in usernames if username.strip()]
+        print(f"Usernames entered manually: {usernames}")
+        return usernames
+    else:
+        print("Invalid selection. Please enter either '1' or '2'.")
+        return get_usernames()
+
 
 if __name__ == '__main__':
     scrape()
