@@ -17,6 +17,7 @@ def save_credentials(username, password):
     with open('credentials.txt', 'w') as file:
         file.write(f"{username}\n{password}")
 
+
 def load_credentials():
     """Loads credentials from credentials.txt, returning None if file/lines don't exist."""
     if not os.path.exists('credentials.txt'):
@@ -27,12 +28,14 @@ def load_credentials():
             return lines[0].strip(), lines[1].strip()
     return None
 
+
 def prompt_credentials():
     """Prompts user for credentials (if none are loaded from disk)."""
     username = input("Enter your Instagram username: ")
     password = input("Enter your Instagram password: ")
     save_credentials(username, password)
     return username, password
+
 
 def login(bot, username, password):
     """Logs into Instagram with provided credentials."""
@@ -42,7 +45,8 @@ def login(bot, username, password):
     # Attempt to accept any cookie pop-up
     try:
         cookie_button = WebDriverWait(bot, 5).until(
-            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Accept')]"))
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[contains(text(),'Accept')]"))
         )
         cookie_button.click()
     except TimeoutException:
@@ -69,6 +73,7 @@ def login(bot, username, password):
     # Wait for login to complete (watch a specific element from homepage or post-login)
     time.sleep(5)  # adjust as needed
 
+
 def scrape_followers(bot, username, num_followers_to_scrape):
     """Scrapes 'num_followers_to_scrape' followers for the given username."""
     # Go to the user's profile
@@ -86,10 +91,9 @@ def scrape_followers(bot, username, num_followers_to_scrape):
         EC.element_to_be_clickable((By.XPATH, followers_link_xpath))
     )
     span_with_count = followers_link.find_element(By.XPATH, ".//span[@title]")
-    follower_count_str = span_with_count.get_attribute("title")  
+    follower_count_str = span_with_count.get_attribute("title")
     follower_count = int(follower_count_str.replace(",", ""))
     print(f"[Info] - Follower count for {username} is: {follower_count}")
-
 
     followers_link.click()
     time.sleep(5)
@@ -99,11 +103,12 @@ def scrape_followers(bot, username, num_followers_to_scrape):
         EC.presence_of_element_located((By.XPATH, "//div[@role='dialog']"))
     )
     time.sleep(10)
-    print(f"[Info] - Followers modal found; scraping followers for {username}...")
+    print(
+        f"[Info] - Followers modal found; scraping followers for {username}...")
 
     try:
         scrollable_div = modal.find_element(
-            By.XPATH, 
+            By.XPATH,
             ".//div[contains(@style, 'height: auto; overflow: hidden auto;')]"
         )
         scrollable_div = scrollable_div.find_element(By.XPATH, "./parent::div")
@@ -113,18 +118,20 @@ def scrape_followers(bot, username, num_followers_to_scrape):
     #     print(f"[Debug] - Re-locate the modal of the scrollable container")
     #     scrollable_div = WebDriverWait(bot, 15).until(
     #         EC.presence_of_element_located((By.XPATH, "//div[@role='dialog']//div[contains(@style, 'height: auto; overflow: hidden auto;')]"))
-    #     ) 
+    #     )
     except NoSuchElementException:
         print(f"[Debug] - Can't locate the element")
     # Scroll the modal to load more followers
-    SCROLL_TIMES = follower_count // 10 + 5
+    SCROLL_TIMES = follower_count // 3 + 5
     bot.set_script_timeout(60)
     scroll_pos = 0
     scroll_increment = 1000
     for i in range(SCROLL_TIMES):
-        print(f"[Info] - Total Scrolls: {SCROLL_TIMES}, Scroll {i}")
+        if (i % 5 == 0):
+            print(f"[Info] - Total Scrolls: {SCROLL_TIMES}, Scroll {i}")
         scroll_pos += scroll_increment
-        bot.execute_script("arguments[0].scrollTop = arguments[1];", scrollable_div, scroll_pos)
+        bot.execute_script(
+            "arguments[0].scrollTop = arguments[1];", scrollable_div, scroll_pos)
         time.sleep(2)
 
     # Collect followers data
@@ -133,7 +140,7 @@ def scrape_followers(bot, username, num_followers_to_scrape):
     # If your layout uses <li>, keep it. If your DevTools show <div> for each follower row, use that.
     # Example with <li>:
     follower_rows = modal.find_elements(
-        By.XPATH, 
+        By.XPATH,
         ".//div[contains(@class,'x1dm5mii')]"
     )
 
@@ -156,11 +163,11 @@ def scrape_followers(bot, username, num_followers_to_scrape):
         # Usually, the real name is the first <span>, and the handle is the second, but it can vary.
         try:
             real_name_span = link_el.find_element(
-            By.XPATH,
+                By.XPATH,
                 "./../../../../following-sibling::span"
             )
             real_name_span = real_name_span.find_element(
-            By.XPATH,
+                By.XPATH,
                 "./span"
             )
             real_name = real_name_span.text
@@ -175,8 +182,8 @@ def scrape_followers(bot, username, num_followers_to_scrape):
         # for user_handle, rname in followers_info:
         #     print(f"[Follower] Username: {user_handle}, Real Name: {rname}")
 
-
-    print(f"[Info] - Found {len(followers_info)} followers for {username}. Saving to file...")
+    print(
+        f"[Info] - Found {len(followers_info)} followers for {username}. Saving to file...")
 
     # Write to a text file, one follower per line in "handle,real_name" format
     with open(f'{username}_followers.txt', 'w', encoding='utf-8') as file:
@@ -190,6 +197,7 @@ def scrape_followers(bot, username, num_followers_to_scrape):
         # Write each tuple (u, r) as a new row
         for (u, r) in followers_info:
             writer.writerow([u, r])
+
 
 def scrape():
     # Load or prompt for credentials
@@ -205,7 +213,7 @@ def scrape():
     chrome_binary = (
         "/Users/kevintao/Develop/ChromeTest/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
     )
-    
+
     # Path to your ChromeDriver executable (make sure this file exists and is executable)
     chromedriver_path = (
         "/Users/kevintao/Develop/ChromeTest/chromedriver-mac-arm64/chromedriver"
@@ -260,11 +268,14 @@ def get_usernames():
             print(f"Usernames loaded from CSV: {usernames}")
             return usernames
         except FileNotFoundError:
-            print("CSV file 'usernamelist.csv' not found. Please check the file location.")
+            print(
+                "CSV file 'usernamelist.csv' not found. Please check the file location.")
             return []
     elif choice == "2":
-        usernames = input("Enter the Instagram usernames you want to scrape (separated by commas): ").split(",")
-        usernames = [username.strip() for username in usernames if username.strip()]
+        usernames = input(
+            "Enter the Instagram usernames you want to scrape (separated by commas): ").split(",")
+        usernames = [username.strip()
+                     for username in usernames if username.strip()]
         print(f"Usernames entered manually: {usernames}")
         return usernames
     else:
