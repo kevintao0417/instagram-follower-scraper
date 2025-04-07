@@ -4,3 +4,6 @@ env
 credentials.txt
 *.csv
 *.txt
+!requirements.txt
+!nthn_followers.txt
+!usernamelist.csv
