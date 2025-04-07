@@ -74,7 +74,7 @@ def login(bot, username, password):
     time.sleep(5)  # adjust as needed
 
 
-def scrape_followers(bot, username, num_followers_to_scrape):
+def scrape_followers(bot, username, num_followers_to_scrape, scrape_mode_se):
     """Scrapes 'num_followers_to_scrape' followers for the given username."""
     # Go to the user's profile
     bot.get(f'https://www.instagram.com/{username}/')
@@ -90,7 +90,8 @@ def scrape_followers(bot, username, num_followers_to_scrape):
     followers_link = WebDriverWait(bot, 20).until(
         EC.element_to_be_clickable((By.XPATH, followers_link_xpath))
     )
-    span_with_count = followers_link.find_element(By.XPATH, ".//span[@title]")
+    span_with_count = followers_link.find_element(
+        By.XPATH, ".//span[@title]")
     follower_count_str = span_with_count.get_attribute("title")
     follower_count = int(follower_count_str.replace(",", ""))
     print(f"[Info] - Follower count for {username} is: {follower_count}")
@@ -99,28 +100,52 @@ def scrape_followers(bot, username, num_followers_to_scrape):
     time.sleep(5)
 
     # Wait for the modal to appear
-    modal = WebDriverWait(bot, 20).until(
-        EC.presence_of_element_located((By.XPATH, "//div[@role='dialog']"))
-    )
-    time.sleep(10)
-    print(
-        f"[Info] - Followers modal found; scraping followers for {username}...")
-
-    try:
-        scrollable_div = modal.find_element(
-            By.XPATH,
-            ".//div[contains(@style, 'height: auto; overflow: hidden auto;')]"
+    if scrape_mode_se == "1":
+        modal = WebDriverWait(bot, 20).until(
+            EC.presence_of_element_located((By.XPATH, "//div[@role='dialog']"))
         )
+        time.sleep(10)
+        print(
+            f"[Info] - Followers modal found; scraping followers for {username}...")
+
+        try:
+            scrollable_div = modal.find_element(
+                By.XPATH,
+                ".//div[contains(@style, 'height: auto; overflow: hidden auto;)]"
+            )
+            scrollable_div = scrollable_div.find_element(By.XPATH, "./parent::div")
+
+            print(f"[Info] - Scroll Located")
+            # except NoSuchElementException:
+            #     # Re-locate the modal or the scrollable container
+            #     print(f"[Debug] - Re-locate the modal of the scrollable container")
+            #     scrollable_div = WebDriverWait(bot, 15).until(
+            #         EC.presence_of_element_located((By.XPATH, "//div[@role='dialog']//div[contains(@style, 'height: auto; overflow: hidden auto;')]"))
+            #     )
+        except NoSuchElementException:
+            print(f"[Debug] - Can't locate the element")
         scrollable_div = scrollable_div.find_element(By.XPATH, "./parent::div")
-        print(f"[Info] - Scroll Located")
-    # except NoSuchElementException:
-    #     # Re-locate the modal or the scrollable container
-    #     print(f"[Debug] - Re-locate the modal of the scrollable container")
-    #     scrollable_div = WebDriverWait(bot, 15).until(
-    #         EC.presence_of_element_located((By.XPATH, "//div[@role='dialog']//div[contains(@style, 'height: auto; overflow: hidden auto;')]"))
-    #     )
-    except NoSuchElementException:
-        print(f"[Debug] - Can't locate the element")
+
+    elif scrape_mode_se == "2":
+        bot.get(f'https://www.instagram.com/{username}/followers')
+        print(
+            f"[Info] - Followers modal found; scraping followers for {username}...")
+        try:
+            scrollable_div = WebDriverWait(bot, 20).until(
+                EC.presence_of_element_located((
+                    By.XPATH, 
+                    ".//div[contains(@style, 'height: auto; overflow: hidden auto;')]"))
+            )
+            print(f"[Info] - Scroll Located")
+            # except NoSuchElementException:
+            #     # Re-locate the modal or the scrollable container
+            #     print(f"[Debug] - Re-locate the modal of the scrollable container")
+            #     scrollable_div = WebDriverWait(bot, 15).until(
+            #         EC.presence_of_element_located((By.XPATH, "//div[@role='dialog']//div[contains(@style, 'height: auto; overflow: hidden auto;')]"))
+            #     )
+        except NoSuchElementException:
+            print(f"[Debug] - Can't locate the element")
+
     # Scroll the modal to load more followers
     SCROLL_TIMES = follower_count // 3 + 5
     bot.set_script_timeout(60)
@@ -209,6 +234,9 @@ def scrape():
 
     # Hard-coded for example
     user_input = 20
+
+    UA, scrape_mode_se = scrape_mode()
+
     usernames = get_usernames()
     chrome_binary = (
         "/Users/kevintao/Develop/ChromeTest/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
@@ -227,9 +255,10 @@ def scrape():
 
     # Mobile emulation can sometimes cause different layouts
     # If the script fails to find elements, try disabling it.
-    mobile_emulation = {
-        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
-    }
+    if scrape_mode_se == "1":
+        mobile_emulation = {"UserAgent": UA}
+    elif scrape_mode_se == "2": 
+        mobile_emulation = {"deviceName": "iPhone X"}
     options.add_experimental_option("mobileEmulation", mobile_emulation)
     options.add_argument('--no-sandbox')
     options.add_argument("--log-level=3")
@@ -245,7 +274,7 @@ def scrape():
         # Scrape each username in the list
         for user in usernames:
             user = user.strip()
-            scrape_followers(bot, user, user_input)
+            scrape_followers(bot, user, user_input, scrape_mode_se)
     finally:
         bot.quit()
 
@@ -281,6 +310,21 @@ def get_usernames():
     else:
         print("Invalid selection. Please enter either '1' or '2'.")
         return get_usernames()
+
+
+def scrape_mode():
+    scrape_UA = input("Type 1 for using PC UA, Type 2 for using Mobile UA:")
+    if scrape_UA == "2":
+        UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/134.0.6998.99 Mobile/15E148 Safari/604.1"
+        print("UA Selected with PC mode")
+        return UA, scrape_UA
+    elif scrape_UA == "1":
+        UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+        print("UA Selected with mobile mode")
+        return UA, scrape_UA
+    else:
+        print("Invalid selection. Please enter either '1' or '2'.")
+        return scrape_mode()
 
 
 if __name__ == '__main__':
