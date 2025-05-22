@@ -1,0 +1,101 @@
+[
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 1767798439,
+    "name": "ig_did",
+    "value": "204F3261-AF6F-41EE-803B-BA0ED786F818"
+  },
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 1770822442,
+    "name": "datr",
+    "value": "KEN9ZzPc651U9MAN-MSzrAwQ"
+  },
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 1770822442,
+    "name": "ps_l",
+    "value": "1"
+  },
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 1770822442,
+    "name": "ps_n",
+    "value": "1"
+  },
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 1770822462,
+    "name": "mid",
+    "value": "Z31DKAAEAAE98YACtVcsJ1-pLkLI"
+  },
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 1768013903,
+    "name": "ig_nrcb",
+    "value": "1"
+  },
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 1782503749,
+    "name": "csrftoken",
+    "value": "64D31DyX5bQTK8BMGfQRB9DOVXQl7nmz"
+  },
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 1755719749,
+    "name": "ds_user_id",
+    "value": "8453281967"
+  },
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 1779479288,
+    "name": "sessionid",
+    "value": "8453281967%3AB7scjSFe452lBx%3A27%3AAYfPahpKaN5MpIPtTSV4yl5K7SuUxG7eAW4TxCMFGg"
+  },
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 1748548544,
+    "name": "wd",
+    "value": "367x823"
+  },
+  {
+    "domain": ".instagram.com",
+    "flag": true,
+    "path": "/",
+    "secure": true,
+    "expiration": 0,
+    "name": "rur",
+    "value": "\"HIL\\0548453281967\\0541779479748:01f7619ca2c565e820bb212a70ca0dee033a30de82a0de763a955ea8a9e4d5bd41dd40ce\""
+  }
+]
